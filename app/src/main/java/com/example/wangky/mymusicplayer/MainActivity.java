@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this,MusicPlayActivity.class);
 
                 intent.putExtra("uri",(String)data.get("data"));
+                intent.putExtra("duration",(int) data.get("duration"));
 
                 startActivity(intent);
 
@@ -106,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 map.put("data",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)));
                 map.put("artist",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
                 map.put("displayName",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)));
-                map.put("duration",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
+                map.put("duration",cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
 
                 list.add(map);
             }
