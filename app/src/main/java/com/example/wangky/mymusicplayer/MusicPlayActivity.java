@@ -1,9 +1,12 @@
 package com.example.wangky.mymusicplayer;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -25,6 +28,25 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     private MediaPlayer mediaPlayer = new MediaPlayer();
 
     SeekBar seekBar;
+
+
+
+    ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+            MyService.MyBinder myBinder = (MyService.MyBinder) service;
+
+            myBinder.UpdateSeekBarUi(MusicPlayActivity.this.mediaPlayer,MusicPlayActivity.this.handler);
+
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
 
     //接受多线程信息，安卓中不允许主线程实现UI更新
@@ -74,7 +96,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         ) {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(mediaPlayer.isPlaying()){
+                if(fromUser && mediaPlayer.isPlaying()){
                     mediaPlayer.seekTo(progress);
                 }
             }
@@ -118,7 +140,6 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
             e.printStackTrace();
         }
 
-
     }
 
 
@@ -144,8 +165,19 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
 
                 case R.id.play:
                     if(!mediaPlayer.isPlaying()){
-                        mediaPlayer.start();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mediaPlayer.start();
+                            }
+                        }).start();
+
 //                        new Thread(new SeekBarThread()).start();
+
+                        Intent intent = new Intent(MusicPlayActivity.this,MyService.class);
+
+                        bindService(intent,connection,BIND_AUTO_CREATE);
+
                     }
 
                     break;
@@ -153,12 +185,16 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                 case R.id.pause:
                     if(mediaPlayer.isPlaying()){
                         mediaPlayer.pause();
+
+                        unbindService(connection);
                     }
                     break;
                 case R.id.stop:
 
                     if(mediaPlayer.isPlaying()){
                         mediaPlayer.stop();
+
+                        unbindService(connection);
                     }
 
                     break;
