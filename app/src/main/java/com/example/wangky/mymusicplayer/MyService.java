@@ -16,25 +16,29 @@ import static android.content.ContentValues.TAG;
 
 public class MyService extends Service {
 
+    private Timer timer;
+
     public MyService() {
 
     }
 
     public class  MyBinder extends Binder{
+
+
         public void showToast(){
             Toast.makeText(MyService.this.getApplicationContext(),"MyService",Toast.LENGTH_LONG);
         }
 
         public void UpdateSeekBarUi(final MediaPlayer mediaPlayer, final Handler handler){
 
-            final Timer timer = new Timer();
-                         new Thread(new Runnable() {
+            timer = new Timer();
+                new Thread(new Runnable() {
                 @Override
                 public void run() {
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
-
+                            Log.i("MyService", "timer run : ");
                             if(null != mediaPlayer && mediaPlayer.isPlaying()){
                                 int progress = mediaPlayer.getCurrentPosition();
                                 handler.sendEmptyMessage(progress);
@@ -44,33 +48,13 @@ public class MyService extends Service {
                 }
             }).start();
 
-
-
-
-
-
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//
-//                        while (null != mediaPlayer && mediaPlayer.isPlaying()){
-//
-//                            int progress = mediaPlayer.getCurrentPosition();
-//
-//                            handler.sendEmptyMessage(progress);
-//
-//                            try {
-//                                Thread.sleep(1000);
-//                            }catch (Exception e){
-//                                e.printStackTrace();
-//                            }
-//
-//                        }
-//
-//                    }
-//                }).start();
         }
 
+
+        public void unbindCallback(){
+            Log.i("MyService", "unbindCallback: timer cancel ");
+            timer.cancel();
+        }
 
 
         public MyService getMyService(){
@@ -96,7 +80,8 @@ public class MyService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.i(TAG, "onDestroy: trigger");
+        Log.i(TAG, " MyService onDestroy: trigger");
+        timer.cancel();
         super.onDestroy();
     }
 
