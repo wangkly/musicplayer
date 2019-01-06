@@ -8,10 +8,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -36,7 +37,15 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
 
     TextView durationMax;
 
+    Toolbar toolbar;
+
     private Boolean isPlaying =false;
+
+    private String mediaId ="";
+
+    private int position=0;
+
+    LocalBroadcastManager localBroadcastManager;
 
     ServiceConnection connection = new ServiceConnection() {
         MyService.MyBinder myBinder;
@@ -73,37 +82,27 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i("MusicPlayActivity", "onCreate: MusicPlayActivity ");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_play);
 
-        Intent intent = getIntent();
+        localBroadcastManager = LocalBroadcastManager.getInstance(this);
 
-        String uri =intent.getStringExtra("uri");
+        toolbar = findViewById(R.id.toolbar);
+        play =findViewById(R.id.play);
+        last =findViewById(R.id.last);
+        next =findViewById(R.id.next);
+        start = findViewById(R.id.start);
+        durationMax = findViewById(R.id.durationMax);
+        seekBar = findViewById(R.id.seekBar);
 
-        int duration = intent.getIntExtra("duration",0);
-
-        initMediaPlayer(uri);
-
-         play =findViewById(R.id.play);
-         last =findViewById(R.id.last);
-         next =findViewById(R.id.next);
-         start = findViewById(R.id.start);
-         durationMax = findViewById(R.id.durationMax);
-
-         seekBar = findViewById(R.id.seekBar);
-
-        String time = this.formatTime(duration);
-        start.setText("00:00");
-        durationMax.setText(time);
-
-
-        seekBar.setMax(duration);
-
-        this.playMusic();
 
         play.setOnClickListener(this);
         last.setOnClickListener(this);
         next.setOnClickListener(this);
+
+        this.prepareMedia(true);
 
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -125,23 +124,69 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
             }
         });
 
+    }
 
 
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-//
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
+    public void prepareMedia(boolean isFirstTime){
+
+        Intent intent = getIntent();
+
+        String uri =intent.getStringExtra("uri");
+
+        int duration = intent.getIntExtra("duration",0);
+
+        String title = intent.getStringExtra("title");
+
+        String artist = intent.getStringExtra("artist");
+
+        String id = intent.getStringExtra("id");
+
+        position= intent.getIntExtra("position",0);
+
+        mediaId = id;
+
+        initMediaPlayer(uri);
+
+        toolbar.setTitle(title);
+        toolbar.setSubtitle(artist);
+
+        String time = this.formatTime(duration);
+        start.setText("00:00");
+        durationMax.setText(time);
+
+        seekBar.setMax(duration);
+
+        this.playMusic();
+
+        if(isFirstTime){
+            Intent ServiceIntent = new Intent(MusicPlayActivity.this,MyService.class);
+            bindService(ServiceIntent,connection,BIND_AUTO_CREATE);
+        }
+
     }
 
 
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        String nid= intent.getStringExtra("id");
+        if(!mediaId.equals(nid)){
+            setIntent(intent);
+            mediaPlayer.reset();
+            this.prepareMedia(false);
+
+        }
+
+    }
+
+    @Override
+    protected void onResume() {
+
+        Log.i("MusicPlayActivity", "onResume: MusicPlayActivity" );
+
+        super.onResume();
+    }
 
     public void initMediaPlayer(String uri){
 
@@ -174,8 +219,6 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         if(!mediaPlayer.isPlaying()){
             mediaPlayer.start();
             play.setImageDrawable(getResources().getDrawable(R.drawable.pause));
-            Intent intent = new Intent(MusicPlayActivity.this,MyService.class);
-            bindService(intent,connection,BIND_AUTO_CREATE);
         }
 
     }
@@ -184,8 +227,9 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onClick(View v) {
+        Intent intent;
 
-            switch (v.getId()){
+        switch (v.getId()){
 
                 case R.id.play:
                     if(mediaPlayer.isPlaying()){
@@ -200,18 +244,18 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                     break;
 
                 case R.id.last:
-                    if(mediaPlayer.isPlaying()){
-                        mediaPlayer.pause();
+                    intent= new Intent("com.example.wangky.mymusicplayer.MainActivity.changeMedia");
+                    intent.putExtra("type","previous");
+                    intent.putExtra("position",position);
 
-                    }
+                    localBroadcastManager.sendBroadcast(intent);
+
                     break;
                 case R.id.next:
-
-                    if(mediaPlayer.isPlaying()){
-                        mediaPlayer.stop();
-
-                        unbindService(connection);
-                    }
+                     intent = new Intent("com.example.wangky.mymusicplayer.MainActivity.changeMedia");
+                    intent.putExtra("type","next");
+                    intent.putExtra("position",position);
+                    localBroadcastManager.sendBroadcast(intent);
 
                     break;
 
@@ -235,34 +279,37 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     }
 
 
-    class SeekBarThread implements  Runnable{
-
-        @Override
-        public void run() {
-
-            while (null != mediaPlayer && mediaPlayer.isPlaying()){
-
-               int progress = mediaPlayer.getCurrentPosition();
-
-               handler.sendEmptyMessage(progress);
-
-               try {
-                   Thread.sleep(100);
-               }catch (Exception e){
-                   e.printStackTrace();
-               }
-
-            }
-
-
-        }
-    }
+//    class SeekBarThread implements  Runnable{
+//
+//        @Override
+//        public void run() {
+//
+//            while (null != mediaPlayer && mediaPlayer.isPlaying()){
+//
+//               int progress = mediaPlayer.getCurrentPosition();
+//
+//               handler.sendEmptyMessage(progress);
+//
+//               try {
+//                   Thread.sleep(100);
+//               }catch (Exception e){
+//                   e.printStackTrace();
+//               }
+//
+//            }
+//
+//
+//        }
+//    }
 
 
     @Override
     public void onBackPressed() {
         moveTaskToBack(true);
         Log.i("MusicPlayActivity", "onBackPressed: press");
-        super.onBackPressed();
+
+        Intent intent = new Intent(MusicPlayActivity.this,MainActivity.class);
+        startActivity(intent);
+
     }
 }

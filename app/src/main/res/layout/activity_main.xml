@@ -27,6 +27,6 @@
         app:layout_constraintBottom_toBottomOf="@id/playlist"
         app:layout_constraintRight_toRightOf="@id/playlist"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_media_play" />
+        app:srcCompat="@drawable/caret_right" />
 
 </android.support.constraint.ConstraintLayout>
