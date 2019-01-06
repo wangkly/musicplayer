@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -89,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("duration",(int) data.get("duration"));
                 intent.putExtra("title",(String)data.get("title"));
                 intent.putExtra("artist",(String)data.get("artist"));
+                intent.putExtra("albumArt",(String)data.get("albumArt"));
                 startActivity(intent);
 
             }
@@ -109,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 MediaStore.Audio.Media.DISPLAY_NAME,
                 MediaStore.Audio.Media.DURATION,
                 MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.ALBUM
+                MediaStore.Audio.Media.ALBUM_ID
         };
 
         Cursor cursor =getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,projection,null,null,null);
@@ -126,6 +128,14 @@ public class MainActivity extends AppCompatActivity {
                 map.put("artist",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
                 map.put("displayName",cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)));
                 map.put("duration",cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
+
+
+                int album_id =cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+
+                String albumArt =getAlbumArt(album_id);
+
+                map.put("albumArt",albumArt);
+
                 if((int)map.get("duration") >= 60000){
                  list.add(map);
                 }
@@ -191,10 +201,26 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("duration",(int) target.get("duration"));
         intent.putExtra("title",(String)target.get("title"));
         intent.putExtra("artist",(String)target.get("artist"));
+        intent.putExtra("albumArt",(String)target.get("albumArt"));
         startActivity(intent);
 
     }
 
+
+
+    private String getAlbumArt(int album_id) {
+        String mUriAlbums = "content://media/external/audio/albums";
+        String[] projection = new String[] { "album_art" };
+        Cursor cur = this.getContentResolver().query(Uri.parse(mUriAlbums + "/" + Integer.toString(album_id)),projection, null, null, null);
+        String album_art = null;
+        if (cur.getCount() > 0 && cur.getColumnCount() > 0){
+            cur.moveToNext();
+            album_art = cur.getString(0);
+        }
+        cur.close();
+        cur = null;
+        return album_art;
+    }
 
 
 }

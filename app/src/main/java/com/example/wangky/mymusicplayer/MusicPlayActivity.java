@@ -3,6 +3,9 @@ package com.example.wangky.mymusicplayer;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -39,11 +43,15 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
 
     Toolbar toolbar;
 
+    ImageView albumImg;
+
     private Boolean isPlaying =false;
 
     private String mediaId ="";
 
     private int position=0;
+
+    private String albumArt;
 
     LocalBroadcastManager localBroadcastManager;
 
@@ -96,7 +104,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         start = findViewById(R.id.start);
         durationMax = findViewById(R.id.durationMax);
         seekBar = findViewById(R.id.seekBar);
-
+        albumImg = findViewById(R.id.albumImg);
 
         play.setOnClickListener(this);
         last.setOnClickListener(this);
@@ -142,6 +150,18 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         String id = intent.getStringExtra("id");
 
         position= intent.getIntExtra("position",0);
+
+        albumArt = intent.getStringExtra("albumArt");
+
+        Bitmap bm;
+        if (albumArt == null){
+            albumImg.setBackgroundResource(R.drawable.music);
+        } else{
+            bm = BitmapFactory.decodeFile(albumArt);
+            BitmapDrawable bmpDraw = new BitmapDrawable(bm);
+             albumImg.setImageDrawable(bmpDraw);
+        }
+
 
         mediaId = id;
 
