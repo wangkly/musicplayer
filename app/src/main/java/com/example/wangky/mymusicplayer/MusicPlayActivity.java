@@ -191,7 +191,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         String nid= intent.getStringExtra("id");
-        if(!mediaId.equals(nid)){
+        if(null != nid && !mediaId.equals(nid)){
             setIntent(intent);
             mediaPlayer.reset();
             this.prepareMedia(false);
@@ -299,28 +299,6 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     }
 
 
-//    class SeekBarThread implements  Runnable{
-//
-//        @Override
-//        public void run() {
-//
-//            while (null != mediaPlayer && mediaPlayer.isPlaying()){
-//
-//               int progress = mediaPlayer.getCurrentPosition();
-//
-//               handler.sendEmptyMessage(progress);
-//
-//               try {
-//                   Thread.sleep(100);
-//               }catch (Exception e){
-//                   e.printStackTrace();
-//               }
-//
-//            }
-//
-//
-//        }
-//    }
 
 
     @Override
