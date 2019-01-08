@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -155,7 +156,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
 
         Bitmap bm;
         if (albumArt == null){
-            albumImg.setBackgroundResource(R.drawable.music);
+            albumImg.setImageDrawable(ContextCompat.getDrawable(MusicPlayActivity.this, R.drawable.music));
         } else{
             bm = BitmapFactory.decodeFile(albumArt);
             BitmapDrawable bmpDraw = new BitmapDrawable(bm);
