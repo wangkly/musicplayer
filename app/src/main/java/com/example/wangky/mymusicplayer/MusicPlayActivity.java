@@ -17,6 +17,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -44,7 +47,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
 
     Toolbar toolbar;
 
-    ImageView albumImg;
+    CircleImageView albumImg;
 
     private Boolean isPlaying =false;
 
@@ -162,6 +165,12 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
             BitmapDrawable bmpDraw = new BitmapDrawable(bm);
              albumImg.setImageDrawable(bmpDraw);
         }
+
+        //旋转动画
+        Animation rotation = AnimationUtils.loadAnimation(this,R.anim.rotation);
+        LinearInterpolator interpolator = new LinearInterpolator();
+        rotation.setInterpolator(interpolator);
+        albumImg.startAnimation(rotation);
 
 
         mediaId = id;
@@ -309,6 +318,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
 
         Intent intent = new Intent(MusicPlayActivity.this,MainActivity.class);
         startActivity(intent);
+        overridePendingTransition(R.anim.side_out,R.anim.animo_no);
 
     }
 }

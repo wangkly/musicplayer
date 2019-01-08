@@ -15,10 +15,11 @@
         app:layout_constraintBottom_toTopOf="@id/bar"
         >
 
-        <ImageView
+        <com.example.wangky.mymusicplayer.CircleImageView
             android:id="@+id/albumImg"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:src="@drawable/music"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"

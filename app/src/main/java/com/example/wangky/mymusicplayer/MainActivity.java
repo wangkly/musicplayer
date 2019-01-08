@@ -107,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("artist",(String)data.get("artist"));
                 intent.putExtra("albumArt",(String)data.get("albumArt"));
                 startActivity(intent);
+                overridePendingTransition(R.anim.side_in_right,R.anim.animo_no);
 
             }
         });
